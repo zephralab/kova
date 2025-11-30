@@ -1,0 +1,189 @@
+### Projects API Tests
+### For use with VS Code REST Client extension
+### https://marketplace.visualstudio.com/items?itemName=humao.rest-client
+
+### Variables
+@baseUrl = http://localhost:3000
+@sessionCookie = <your-session-cookie>
+@templateId = <template-uuid>
+
+### ============================================
+### POST /api/projects - Create with Template
+### ============================================
+
+POST {{baseUrl}}/api/projects
+Content-Type: application/json
+Cookie: sb-access-token={{sessionCookie}}
+
+{
+  "clientName": "Mr. Sharma",
+  "clientContact": "+91 98765 43210",
+  "projectName": "3BHK Interior Design",
+  "totalAmount": 800000,
+  "templateId": "{{templateId}}"
+}
+
+### ============================================
+### POST /api/projects - Create with Custom Milestones
+### ============================================
+
+POST {{baseUrl}}/api/projects
+Content-Type: application/json
+Cookie: sb-access-token={{sessionCookie}}
+
+{
+  "clientName": "Ms. Patel",
+  "clientContact": "patel@example.com",
+  "projectName": "Office Interior Renovation",
+  "totalAmount": 500000,
+  "milestones": [
+    {
+      "title": "Advance Payment",
+      "description": "50% upfront payment",
+      "percentage": 50,
+      "orderIndex": 1
+    },
+    {
+      "title": "Final Payment",
+      "description": "Upon project completion",
+      "percentage": 50,
+      "orderIndex": 2
+    }
+  ]
+}
+
+### ============================================
+### POST /api/projects - Create with 4-stage Custom Milestones
+### ============================================
+
+POST {{baseUrl}}/api/projects
+Content-Type: application/json
+Cookie: sb-access-token={{sessionCookie}}
+
+{
+  "clientName": "Mr. Kumar",
+  "clientContact": "+91 99999 88888",
+  "projectName": "Villa Interior Design",
+  "totalAmount": 1200000,
+  "milestones": [
+    {
+      "title": "Advance Payment",
+      "description": "Initial advance before starting",
+      "percentage": 40,
+      "orderIndex": 1
+    },
+    {
+      "title": "Design Approval",
+      "description": "After client approves design concepts",
+      "percentage": 20,
+      "orderIndex": 2
+    },
+    {
+      "title": "Execution Start",
+      "description": "Before starting physical execution work",
+      "percentage": 20,
+      "orderIndex": 3
+    },
+    {
+      "title": "Final Delivery",
+      "description": "Upon project completion and handover",
+      "percentage": 20,
+      "orderIndex": 4
+    }
+  ]
+}
+
+### ============================================
+### GET /api/projects - List All Projects
+### ============================================
+
+GET {{baseUrl}}/api/projects
+Cookie: sb-access-token={{sessionCookie}}
+
+### ============================================
+### Error Test Cases
+### ============================================
+
+### Missing required field (clientName)
+POST {{baseUrl}}/api/projects
+Content-Type: application/json
+Cookie: sb-access-token={{sessionCookie}}
+
+{
+  "projectName": "Test Project",
+  "totalAmount": 100000,
+  "templateId": "{{templateId}}"
+}
+
+###
+
+### Invalid totalAmount (zero)
+POST {{baseUrl}}/api/projects
+Content-Type: application/json
+Cookie: sb-access-token={{sessionCookie}}
+
+{
+  "clientName": "Test Client",
+  "projectName": "Test Project",
+  "totalAmount": 0,
+  "templateId": "{{templateId}}"
+}
+
+###
+
+### Milestones don't sum to 100%
+POST {{baseUrl}}/api/projects
+Content-Type: application/json
+Cookie: sb-access-token={{sessionCookie}}
+
+{
+  "clientName": "Test Client",
+  "projectName": "Test Project",
+  "totalAmount": 100000,
+  "milestones": [
+    {
+      "title": "Milestone 1",
+      "percentage": 40,
+      "orderIndex": 1
+    },
+    {
+      "title": "Milestone 2",
+      "percentage": 40,
+      "orderIndex": 2
+    }
+  ]
+}
+
+###
+
+### Both templateId and milestones provided (should fail)
+POST {{baseUrl}}/api/projects
+Content-Type: application/json
+Cookie: sb-access-token={{sessionCookie}}
+
+{
+  "clientName": "Test Client",
+  "projectName": "Test Project",
+  "totalAmount": 100000,
+  "templateId": "{{templateId}}",
+  "milestones": [
+    {
+      "title": "Milestone 1",
+      "percentage": 100,
+      "orderIndex": 1
+    }
+  ]
+}
+
+###
+
+### Neither templateId nor milestones provided (should fail)
+POST {{baseUrl}}/api/projects
+Content-Type: application/json
+Cookie: sb-access-token={{sessionCookie}}
+
+{
+  "clientName": "Test Client",
+  "projectName": "Test Project",
+  "totalAmount": 100000
+}
