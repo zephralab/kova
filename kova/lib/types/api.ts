@@ -65,3 +65,17 @@ export interface ApiErrorResponse {
     error: string;
     details?: string;
 }
+
+// Template list response
+export interface TemplateResponse {
+    id: string;
+    name: string;
+    description: string;
+    isDefault: boolean;
+    items: {
+        id: string;
+        title: string;
+        percentage: number;
+        orderIndex: number;
+    }[];
+}
