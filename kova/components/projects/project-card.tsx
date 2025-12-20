@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import { MoreVertical, ExternalLink, ArrowRight } from 'lucide-react';
 import type { ProjectListItem } from '@/lib/types/api';

@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft, Edit, Share2, MoreVertical, Wallet, TrendingDown, ArrowDownLeft } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getAuthenticatedUserWithFirm } from '@/lib/api/helpers';
-import AuthStatus from '@/components/ui/AuthStatus';
+import AuthStatus from '@/components/AuthStatus';
 import MilestoneList from '@/components/projects/milestone-list';
 import type { Milestone } from '@/lib/types/database';
 
@@ -15,11 +15,18 @@ interface PageProps {
 export default async function ProjectDetailPage(props: PageProps) {
     const params = await props.params;
     const supabase = await createClient();
+    const { data: { session } } = await supabase.auth.getSession();
     let project = null;
     let error = null;
 
     try {
         const { firmId } = await getAuthenticatedUserWithFirm(supabase);
+
+        // Validate UUID format to prevent DB error 22P02
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(params.projectId)) {
+            notFound();
+        }
 
         const { data, error: dbError } = await supabase
             .from('projects')
@@ -95,7 +102,7 @@ export default async function ProjectDetailPage(props: PageProps) {
                         <div className="font-bold text-xl tracking-tight">Kova</div>
                     </div>
                     <Suspense fallback={<div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse" />}>
-                        <AuthStatus />
+                        <AuthStatus session={session} />
                     </Suspense>
                 </div>
             </header>

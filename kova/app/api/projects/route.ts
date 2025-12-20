@@ -34,7 +34,8 @@ export async function POST(request: NextRequest) {
             if (message === 'UNAUTHORIZED') {
                 return errorResponse(ErrorMessages.UNAUTHORIZED, 401);
             }
-            return errorResponse(ErrorMessages.FORBIDDEN, 403);
+            // Return specific forbidden reason if available
+            return errorResponse(ErrorMessages.FORBIDDEN, 403, message);
         }
 
         // Parse and validate request body
@@ -70,7 +71,7 @@ export async function POST(request: NextRequest) {
 
         if (projectError || !project) {
             console.error('Project creation error:', projectError);
-            return errorResponse(ErrorMessages.DATABASE_ERROR, 500);
+            return errorResponse(ErrorMessages.DATABASE_ERROR, 500, projectError.message);
         }
 
         // Create milestones
@@ -101,7 +102,7 @@ export async function POST(request: NextRequest) {
             if (message === 'VALIDATION_ERROR') {
                 return errorResponse('Milestone percentages must sum to 100%', 400);
             }
-            return errorResponse(ErrorMessages.DATABASE_ERROR, 500);
+            return errorResponse(ErrorMessages.DATABASE_ERROR, 500, message);
         }
 
         // Format response
@@ -129,7 +130,7 @@ export async function POST(request: NextRequest) {
         return jsonResponse(response, 201);
     } catch (error) {
         console.error('Unexpected error in POST /api/projects:', error);
-        return errorResponse(ErrorMessages.INTERNAL_ERROR, 500);
+        return errorResponse(ErrorMessages.INTERNAL_ERROR, 500, error instanceof Error ? error.message : 'Unknown error');
     }
 }
 

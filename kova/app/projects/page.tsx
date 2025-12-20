@@ -4,13 +4,15 @@ import { Plus } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getAuthenticatedUserWithFirm } from '@/lib/api/helpers';
 import ProjectCard from '@/components/projects/project-card';
-import AuthStatus from '@/components/ui/AuthStatus';
-import type { ProjectListItem, ProjectSummary } from '@/lib/types/api';
+import AuthStatus from '@/components/AuthStatus';
+import type { ProjectListItem } from '@/lib/types/api';
+import type { ProjectSummary } from '@/lib/types/database';
 
 export const dynamic = 'force-dynamic';
 
 export default async function ProjectsPage() {
     const supabase = await createClient();
+    const { data: { session } } = await supabase.auth.getSession();
     let projects: ProjectListItem[] = [];
     let error = null;
 
@@ -55,7 +57,7 @@ export default async function ProjectsPage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                     <div className="font-bold text-xl tracking-tight">Kova</div>
                     <Suspense fallback={<div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse" />}>
-                        <AuthStatus />
+                        <AuthStatus session={session} />
                     </Suspense>
                 </div>
             </header>

@@ -25,7 +25,65 @@ export async function getAuthenticatedUserWithFirm(
         .single();
 
     if (userError || !userData) {
-        throw new Error('FORBIDDEN');
+        // If user record is missing, try to create it using the RPC function
+        try {
+            // Extract name from metadata or email
+            const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+
+            const { data: newData, error: createError } = await supabase.rpc(
+                'create_firm_and_owner',
+                {
+                    auth_user_id: user.id,
+                    user_email: user.email,
+                    user_name: name,
+                    firm_name: `${name}'s Firm`
+                }
+            );
+
+            if (createError) {
+                console.error('Failed to create user/firm via RPC:', createError);
+                throw new Error(`FORBIDDEN: RPC failed - ${createError.message}`);
+            }
+
+            // RPC returns an array of rows (because it returns TABLE)
+            // Even though it returns one row, Supabase RPC returns data as array or object depending on return type.
+            // RETURNS TABLE(...) usually returns array of objects.
+            const result = Array.isArray(newData) ? newData[0] : newData;
+
+            if (!result || !result.firm_id) {
+                console.error('RPC returned invalid data:', newData);
+                throw new Error('FORBIDDEN: RPC returned invalid data');
+            }
+
+            return {
+                userId: user.id,
+                firmId: result.firm_id,
+            };
+
+        } catch (e) {
+            console.error('Auto-provisioning failed:', e);
+
+            // Last resort: Try to use the emergency override function
+            // This fixes cases where the user exists but RLS hides them
+            try {
+                const { data: forcedData, error: forceError } = await supabase.rpc(
+                    'force_get_firm_id',
+                    { target_user_id: user.id }
+                );
+
+                if (!forceError && forcedData && forcedData.length > 0) {
+                    return {
+                        userId: user.id,
+                        firmId: forcedData[0].firm_id
+                    };
+                }
+            } catch (rpcError) {
+                console.error('Force fetch failed:', rpcError);
+            }
+
+            const msg = e instanceof Error ? e.message : 'Unknown error';
+            throw new Error(`FORBIDDEN: Auto-provisioning failed - ${msg}`);
+        }
     }
 
     return {
