@@ -80,14 +80,57 @@ CREATE INDEX idx_users_email ON users(email);
 
 -- RLS: Users can only see members of their firm
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+
+-- FIXED: Non-recursive policy using SECURITY DEFINER function
+CREATE POLICY "Users can view own profile" ON users 
+  FOR SELECT USING (auth.uid() = id);
+
 CREATE POLICY "Users can view firm members" ON users 
   FOR SELECT USING (
-    firm_id IN (
-      SELECT firm_id FROM users WHERE id = auth.uid()
-    )
+    firm_id = get_my_firm_id()
   );
+
 CREATE POLICY "Users can update own profile" ON users 
   FOR UPDATE USING (auth.uid() = id);
+
+-- ... [Rest of tables remain the same] ...
+
+-- ============================================
+-- 9. HELPER FUNCTIONS (RLS Bypass & Fixes)
+-- ============================================
+
+-- Helper to safely get firm_id without recursion (Used in RLS)
+CREATE OR REPLACE FUNCTION get_my_firm_id()
+RETURNS UUID
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+STABLE
+AS $$
+  SELECT firm_id FROM users WHERE id = auth.uid();
+$$;
+
+-- Emergency lookup for backend/auth (Bypasses RLS completely)
+CREATE OR REPLACE FUNCTION force_get_firm_id(target_user_id UUID)
+RETURNS TABLE (firm_id UUID) 
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT users.firm_id FROM users WHERE users.id = target_user_id;
+END;
+$$ LANGUAGE plpgsql;
+
+GRANT EXECUTE ON FUNCTION get_my_firm_id TO authenticated;
+GRANT EXECUTE ON FUNCTION force_get_firm_id TO authenticated;
+
+-- ============================================
+-- GRANT PERMISSIONS FOR RLS
+-- ============================================
+GRANT ALL ON ALL TABLES IN SCHEMA public TO authenticated;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO authenticated;
+GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO authenticated;
 
 -- ============================================
 -- 3. PROJECTS TABLE (Now belongs to firm, not individual user)
