@@ -8,6 +8,7 @@ import AuthStatus from '@/components/AuthStatus';
 import MilestoneList from '@/components/projects/milestone-list';
 import { FinancialDashboardWrapper } from '@/components/projects/financial-dashboard-wrapper';
 import { ExpensesSection } from '@/components/projects/expenses-section';
+import { ShareProjectModal } from '@/components/ShareProjectModal';
 import type { Milestone } from '@/lib/types/database';
 
 interface PageProps {
@@ -125,10 +126,11 @@ export default async function ProjectDetailPage(props: PageProps) {
                             <Edit className="w-4 h-4" />
                             Edit
                         </Link>
-                        <button className="inline-flex items-center justify-center gap-2 bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                            <Share2 className="w-4 h-4" />
-                            Share
-                        </button>
+                        <ShareProjectModal
+                            projectId={project.id}
+                            currentShareUuid={project.share_uuid}
+                            shareEnabled={project.share_enabled ?? true}
+                        />
                     </div>
                 </div>
 
