@@ -23,6 +23,14 @@ export interface User {
     role: 'owner' | 'admin' | 'member' | 'viewer';
     personal_razorpay_key_id: string | null;
     personal_razorpay_key_secret: string | null;
+    // Payment methods (Week 3)
+    bank_account_holder_name: string | null;
+    bank_name: string | null;
+    account_number: string | null; // Encrypted at rest
+    ifsc_code: string | null;
+    account_type: 'savings' | 'current' | null;
+    upi_id: string | null;
+    payment_methods_updated_at: string | null;
     is_active: boolean;
     last_login_at: string | null;
     created_at: string;
@@ -73,6 +81,7 @@ export interface MilestonePayment {
     razorpay_order_id: string | null;
     status: 'pending' | 'paid' | 'failed' | 'expired';
     created_by_user_id: string | null;
+    reference: string | null; // Transaction ID, UTR, or confirmation number (Week 3)
     paid_at: string | null;
     expired_at: string | null;
     created_at: string;

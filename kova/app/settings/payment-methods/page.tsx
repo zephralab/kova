@@ -1,36 +1,25 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Settings } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
-import EditProjectForm from '@/components/projects/edit-project-form';
 import AuthStatus from '@/components/AuthStatus';
+import PaymentMethodsForm from '@/components/settings/payment-methods-form';
 
-interface PageProps {
-    params: Promise<{ projectId: string }>;
-}
-
-export default async function EditProjectPage(props: PageProps) {
-    const params = await props.params;
+export default async function PaymentMethodsPage() {
     const supabase = await createClient();
     const { data: { session } } = await supabase.auth.getSession();
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
+            {/* Header */}
             <header className="bg-white border-b sticky top-0 z-10">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <Link href={`/projects/${params.projectId}`} className="text-gray-400 hover:text-gray-600 transition-colors">
+                        <Link href="/projects" className="text-gray-400 hover:text-gray-600 transition-colors">
                             <ArrowLeft className="w-5 h-5" />
                         </Link>
                         <Link href="/projects" className="font-bold text-xl tracking-tight hover:text-gray-700">
                             Kova
-                        </Link>
-                        <Link
-                            href="/settings/payment-methods"
-                            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors ml-4"
-                        >
-                            <Settings className="w-4 h-4" />
-                            Payment Settings
                         </Link>
                     </div>
                     <Suspense fallback={<div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse" />}>
@@ -39,11 +28,15 @@ export default async function EditProjectPage(props: PageProps) {
                 </div>
             </header>
 
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-                    <EditProjectForm projectId={params.projectId} />
+            <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div className="mb-8">
+                    <h1 className="text-2xl font-bold text-gray-900">Payment Methods</h1>
+                    <p className="text-gray-500 mt-1">Add your bank account details to request payments from clients.</p>
                 </div>
+
+                <PaymentMethodsForm />
             </main>
         </div>
     );
 }
+

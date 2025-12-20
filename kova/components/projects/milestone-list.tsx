@@ -1,14 +1,24 @@
 'use client';
 
-import { CheckCircle2, Circle, Clock, AlertCircle, ChevronRight, MoreHorizontal } from 'lucide-react';
+import { useState } from 'react';
+import { CheckCircle2, Clock, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import type { Milestone } from '@/lib/types/database';
+import RequestPaymentModal from '@/components/payments/RequestPaymentModal';
+import MarkPaymentModal from '@/components/payments/MarkPaymentModal';
+import PaymentHistory from '@/components/payments/PaymentHistory';
+import EditDueDateModal from '@/components/payments/EditDueDateModal';
 
 interface MilestoneListProps {
     milestones: Milestone[];
     totalAmount: number;
+    projectName: string;
+    clientName: string;
+    projectId: string;
+    onRefresh?: () => void;
 }
 
-export default function MilestoneList({ milestones, totalAmount }: MilestoneListProps) {
+export default function MilestoneList({ milestones, totalAmount, projectName, clientName, projectId, onRefresh }: MilestoneListProps) {
+    const [expandedPayments, setExpandedPayments] = useState<string | null>(null);
 
     const getStatusBadge = (status: Milestone['status']) => {
         switch (status) {
@@ -37,58 +47,127 @@ export default function MilestoneList({ milestones, totalAmount }: MilestoneList
         }
     };
 
+    const handleRefresh = () => {
+        if (onRefresh) {
+            onRefresh();
+        } else {
+            window.location.reload();
+        }
+    };
+
     return (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-            <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                    <thead className="bg-gray-50 border-b">
-                        <tr>
-                            <th className="px-6 py-4 font-medium text-gray-500 w-16">#</th>
-                            <th className="px-6 py-4 font-medium text-gray-500">Milestone</th>
-                            <th className="px-6 py-4 font-medium text-gray-500 text-right">Amount</th>
-                            <th className="px-6 py-4 font-medium text-gray-500 w-40">Status</th>
-                            <th className="px-6 py-4 font-medium text-gray-500 text-right w-32">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                        {milestones.map((milestone) => (
-                            <tr key={milestone.id} className="group hover:bg-gray-50 transition-colors">
-                                <td className="px-6 py-4 text-gray-400 font-medium">
-                                    {milestone.order_index}
-                                </td>
-                                <td className="px-6 py-4">
-                                    <div className="font-medium text-gray-900">{milestone.title}</div>
-                                    {milestone.description && (
-                                        <div className="text-gray-500 text-xs mt-0.5">{milestone.description}</div>
-                                    )}
-                                </td>
-                                <td className="px-6 py-4 text-right">
-                                    <div className="font-medium text-gray-900">
-                                        ₹{milestone.amount.toLocaleString()}
-                                    </div>
-                                    <div className="text-gray-400 text-xs">
-                                        {milestone.percentage}%
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4">
+        <div className="space-y-4">
+            {milestones.map((milestone) => {
+                const amountPaid = milestone.amount_paid || 0;
+                const amountRemaining = milestone.amount - amountPaid;
+                const paymentPercentage = Math.min(100, (amountPaid / milestone.amount) * 100);
+
+                return (
+                    <div key={milestone.id} className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <span className="text-gray-400 font-medium text-sm">#{milestone.order_index}</span>
+                                    <h3 className="font-bold text-gray-900">{milestone.title}</h3>
                                     {getStatusBadge(milestone.status)}
-                                </td>
-                                <td className="px-6 py-4 text-right">
-                                    {milestone.status === 'pending' ? (
-                                        <button className="text-blue-600 hover:text-blue-700 text-xs font-medium border border-blue-200 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded transition-colors whitespace-nowrap">
-                                            Request Payment
-                                        </button>
-                                    ) : (
-                                        <button className="text-gray-400 hover:text-gray-600 p-1">
-                                            <MoreHorizontal className="w-5 h-5" />
-                                        </button>
+                                </div>
+                                {milestone.description && (
+                                    <p className="text-sm text-gray-600 ml-8">{milestone.description}</p>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Payment Progress Bar */}
+                        <div className="mb-4">
+                            <div className="flex justify-between text-xs mb-1 text-gray-600">
+                                <span>₹{amountPaid.toLocaleString('en-IN')} / ₹{milestone.amount.toLocaleString('en-IN')}</span>
+                                <span>{Math.round(paymentPercentage)}%</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                <div
+                                    className="bg-green-600 h-2 rounded-full transition-all"
+                                    style={{ width: `${paymentPercentage}%` }}
+                                />
+                            </div>
+                            {milestone.status !== 'paid' && amountRemaining > 0 && (
+                                <p className="text-xs text-orange-600 mt-1">
+                                    ₹{amountRemaining.toLocaleString('en-IN')} remaining
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Amount and Due Date */}
+                        <div className="flex items-center gap-4 mb-4 text-sm text-gray-600">
+                            <span>Amount: ₹{milestone.amount.toLocaleString('en-IN')}</span>
+                            <div className="flex items-center gap-2">
+                                {milestone.due_date ? (
+                                    <span>Due: {new Date(milestone.due_date).toLocaleDateString('en-IN', {
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: 'numeric'
+                                    })}</span>
+                                ) : (
+                                    <span className="text-gray-400">No due date set</span>
+                                )}
+                                <EditDueDateModal
+                                    milestoneId={milestone.id}
+                                    projectId={projectId}
+                                    milestoneName={milestone.title}
+                                    currentDueDate={milestone.due_date}
+                                    onSuccess={handleRefresh}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-2 flex-wrap items-center">
+                            {milestone.status !== 'paid' && (
+                                <>
+                                    <RequestPaymentModal
+                                        milestoneId={milestone.id}
+                                        milestoneName={milestone.title}
+                                        amount={amountRemaining}
+                                        projectName={projectName}
+                                        clientName={clientName}
+                                        onSuccess={handleRefresh}
+                                    />
+                                    <MarkPaymentModal
+                                        milestoneId={milestone.id}
+                                        amountRemaining={amountRemaining}
+                                        milestoneName={milestone.title}
+                                        onSuccess={handleRefresh}
+                                    />
+                                </>
+                            )}
+                            {milestone.status !== 'pending' && (
+                                <button
+                                    onClick={() => setExpandedPayments(
+                                        expandedPayments === milestone.id ? null : milestone.id
                                     )}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+                                    className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-100 text-gray-700 font-medium flex items-center gap-1"
+                                >
+                                    {expandedPayments === milestone.id ? (
+                                        <>
+                                            <ChevronUp className="w-4 h-4" />
+                                            Hide Payments
+                                        </>
+                                    ) : (
+                                        <>
+                                            <ChevronDown className="w-4 h-4" />
+                                            View Payments
+                                        </>
+                                    )}
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Payment History (expandable) */}
+                        {expandedPayments === milestone.id && (
+                            <PaymentHistory milestoneId={milestone.id} />
+                        )}
+                    </div>
+                );
+            })}
         </div>
     );
 }

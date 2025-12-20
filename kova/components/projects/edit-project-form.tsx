@@ -5,7 +5,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
-import { AlertCircle, ChevronRight, Save, Trash2 } from 'lucide-react';
+import { AlertCircle, ChevronRight, Save, Trash2, Clock, CheckCircle2, Edit2, X, Check } from 'lucide-react';
+import type { MilestoneResponse } from '@/lib/types/api';
+import EditDueDateModal from '@/components/payments/EditDueDateModal';
 
 const editProjectSchema = z.object({
     clientName: z.string().min(1, 'Client name is required'),
@@ -15,6 +17,201 @@ const editProjectSchema = z.object({
 });
 
 type FormData = z.infer<typeof editProjectSchema>;
+
+// Editable Milestone Component
+function EditableMilestone({ 
+    milestone, 
+    projectId, 
+    onUpdate 
+}: { 
+    milestone: MilestoneResponse; 
+    projectId: string; 
+    onUpdate: () => void;
+}) {
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [title, setTitle] = useState(milestone.title);
+    const [description, setDescription] = useState(milestone.description || '');
+    const [error, setError] = useState<string | null>(null);
+
+    const getStatusBadge = (status: string) => {
+        switch (status) {
+            case 'paid':
+                return (
+                    <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        Paid
+                    </span>
+                );
+            case 'partially_paid':
+                return (
+                    <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-50 text-yellow-700">
+                        <AlertCircle className="w-3.5 h-3.5" />
+                        Partially Paid
+                    </span>
+                );
+            default:
+                return (
+                    <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                        <Clock className="w-3.5 h-3.5" />
+                        Pending
+                    </span>
+                );
+        }
+    };
+
+    const handleSave = async () => {
+        if (!title.trim()) {
+            setError('Title is required');
+            return;
+        }
+
+        setIsSaving(true);
+        setError(null);
+
+        try {
+            const res = await fetch(`/api/projects/${projectId}/milestones/${milestone.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: title.trim(),
+                    description: description.trim() || null
+                })
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.error || 'Failed to update milestone');
+            }
+
+            setIsEditing(false);
+            onUpdate();
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to update milestone');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleCancel = () => {
+        setTitle(milestone.title);
+        setDescription(milestone.description || '');
+        setError(null);
+        setIsEditing(false);
+    };
+
+    return (
+        <div className="border border-gray-200 rounded-lg p-4 bg-white hover:border-gray-300 transition-colors">
+            <div className="flex items-start justify-between mb-2">
+                <div className="flex-1">
+                    {isEditing ? (
+                        <div className="space-y-3">
+                            <div>
+                                <label className="block text-xs font-medium text-gray-700 mb-1">
+                                    Milestone Title <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    placeholder="e.g., Advance Payment"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-gray-700 mb-1">
+                                    Description (Optional)
+                                </label>
+                                <textarea
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    rows={2}
+                                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    placeholder="Add a description..."
+                                />
+                            </div>
+                            {error && (
+                                <div className="text-xs text-red-600 bg-red-50 p-2 rounded">
+                                    {error}
+                                </div>
+                            )}
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={handleSave}
+                                    disabled={isSaving}
+                                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded disabled:opacity-50"
+                                >
+                                    <Check className="w-3 h-3" />
+                                    {isSaving ? 'Saving...' : 'Save'}
+                                </button>
+                                <button
+                                    onClick={handleCancel}
+                                    disabled={isSaving}
+                                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-50"
+                                >
+                                    <X className="w-3 h-3" />
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            <div className="flex items-center gap-3 mb-1">
+                                <span className="text-gray-400 font-medium text-sm">#{milestone.orderIndex}</span>
+                                <h3 className="font-semibold text-gray-900">{milestone.title}</h3>
+                                {getStatusBadge(milestone.status)}
+                                <button
+                                    onClick={() => setIsEditing(true)}
+                                    className="ml-auto text-gray-400 hover:text-gray-600 p-1 rounded transition-colors"
+                                    title="Edit milestone"
+                                >
+                                    <Edit2 className="w-4 h-4" />
+                                </button>
+                            </div>
+                            {milestone.description && (
+                                <p className="text-sm text-gray-600 ml-8">{milestone.description}</p>
+                            )}
+                        </>
+                    )}
+                </div>
+            </div>
+            
+            {!isEditing && (
+                <>
+                    <div className="flex items-center gap-4 text-sm text-gray-600 ml-8 mb-2">
+                        <span>Amount: ₹{milestone.amount.toLocaleString('en-IN')}</span>
+                        <span>Percentage: {milestone.percentage}%</span>
+                        {milestone.amountPaid > 0 && (
+                            <span className="text-green-600">
+                                Paid: ₹{milestone.amountPaid.toLocaleString('en-IN')}
+                            </span>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-2 ml-8">
+                        {milestone.dueDate ? (
+                            <span className="text-sm text-gray-600">
+                                Due: {new Date(milestone.dueDate).toLocaleDateString('en-IN', {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric'
+                                })}
+                            </span>
+                        ) : (
+                            <span className="text-sm text-gray-400">No due date set</span>
+                        )}
+                        <EditDueDateModal
+                            milestoneId={milestone.id}
+                            projectId={projectId}
+                            milestoneName={milestone.title}
+                            currentDueDate={milestone.dueDate}
+                            onSuccess={onUpdate}
+                        />
+                    </div>
+                </>
+            )}
+        </div>
+    );
+}
 
 interface EditProjectFormProps {
     projectId: string;
@@ -26,6 +223,7 @@ export default function EditProjectForm({ projectId }: EditProjectFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [milestones, setMilestones] = useState<MilestoneResponse[]>([]);
 
     const {
         register,
@@ -47,6 +245,7 @@ export default function EditProjectForm({ projectId }: EditProjectFormProps) {
                 setValue('clientContact', data.clientContact || '');
                 setValue('projectName', data.projectName);
                 setValue('totalAmount', data.totalAmount);
+                setMilestones(data.milestones || []);
                 setIsLoading(false);
             } catch (err) {
                 console.error(err);
@@ -56,6 +255,17 @@ export default function EditProjectForm({ projectId }: EditProjectFormProps) {
         };
         fetchProject();
     }, [projectId, setValue]);
+
+    const handleRefreshMilestones = async () => {
+        try {
+            const res = await fetch(`/api/projects/${projectId}`);
+            if (!res.ok) throw new Error('Failed to fetch project');
+            const data = await res.json();
+            setMilestones(data.milestones || []);
+        } catch (err) {
+            console.error('Failed to refresh milestones:', err);
+        }
+    };
 
     const onSubmit = async (data: FormData) => {
         setError(null);
@@ -173,6 +383,61 @@ export default function EditProjectForm({ projectId }: EditProjectFormProps) {
                         {errors.totalAmount && <p className="text-sm text-red-500">{errors.totalAmount.message}</p>}
                     </div>
                 </div>
+            </div>
+
+            {/* Milestones Section */}
+            <div className="space-y-4 pt-6 border-t">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h2 className="text-lg font-semibold text-gray-900">Payment Milestones</h2>
+                        <p className="text-sm text-gray-500 mt-1">View and manage milestone details</p>
+                    </div>
+                </div>
+
+                {milestones.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500 text-sm">
+                        No milestones found
+                    </div>
+                ) : (
+                    <div className="space-y-3">
+                        {milestones.map((milestone) => {
+                            const getStatusBadge = (status: string) => {
+                                switch (status) {
+                                    case 'paid':
+                                        return (
+                                            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">
+                                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                                Paid
+                                            </span>
+                                        );
+                                    case 'partially_paid':
+                                        return (
+                                            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-50 text-yellow-700">
+                                                <AlertCircle className="w-3.5 h-3.5" />
+                                                Partially Paid
+                                            </span>
+                                        );
+                                    default:
+                                        return (
+                                            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                                                <Clock className="w-3.5 h-3.5" />
+                                                Pending
+                                            </span>
+                                        );
+                                }
+                            };
+
+                            return (
+                                <EditableMilestone
+                                    key={milestone.id}
+                                    milestone={milestone}
+                                    projectId={projectId}
+                                    onUpdate={handleRefreshMilestones}
+                                />
+                            );
+                        })}
+                    </div>
+                )}
             </div>
 
             <div className="flex items-center justify-end gap-4 pt-6 border-t">

@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, Edit, Share2, MoreVertical, Wallet, TrendingDown, ArrowDownLeft } from 'lucide-react';
+import { ArrowLeft, Edit, Share2, MoreVertical, Wallet, TrendingDown, ArrowDownLeft, Settings } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getAuthenticatedUserWithFirm } from '@/lib/api/helpers';
 import AuthStatus from '@/components/AuthStatus';
@@ -99,7 +99,16 @@ export default async function ProjectDetailPage(props: PageProps) {
                         <Link href="/projects" className="text-gray-400 hover:text-gray-600 transition-colors">
                             <ArrowLeft className="w-5 h-5" />
                         </Link>
-                        <div className="font-bold text-xl tracking-tight">Kova</div>
+                        <Link href="/projects" className="font-bold text-xl tracking-tight hover:text-gray-700">
+                            Kova
+                        </Link>
+                        <Link
+                            href="/settings/payment-methods"
+                            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors ml-4"
+                        >
+                            <Settings className="w-4 h-4" />
+                            Payment Settings
+                        </Link>
                     </div>
                     <Suspense fallback={<div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse" />}>
                         <AuthStatus session={session} />
@@ -183,7 +192,13 @@ export default async function ProjectDetailPage(props: PageProps) {
                         </div>
                     </div>
 
-                    <MilestoneList milestones={project.milestones} totalAmount={totalAmount} />
+                    <MilestoneList 
+                        milestones={project.milestones} 
+                        totalAmount={totalAmount}
+                        projectName={project.project_name}
+                        clientName={project.client_name}
+                        projectId={project.id}
+                    />
                 </div>
 
             </main>
