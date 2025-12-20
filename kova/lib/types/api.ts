@@ -79,3 +79,23 @@ export interface TemplateResponse {
         orderIndex: number;
     }[];
 }
+
+// POST /api/projects/[projectId]/expenses request body
+export interface CreateExpenseRequest {
+    description: string;
+    amount: number;
+    category: 'materials' | 'labor' | 'transport' | 'other';
+    expenseDate: string; // YYYY-MM-DD
+    vendorName?: string | null;
+}
+
+// Expense response
+export interface ExpenseResponse {
+    id: string;
+    description: string;
+    amount: number;
+    category: 'materials' | 'labor' | 'transport' | 'other';
+    expenseDate: string;
+    vendorName: string | null;
+    createdAt: string;
+}

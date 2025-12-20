@@ -1,11 +1,13 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, Edit, Share2, MoreVertical, Wallet, TrendingDown, ArrowDownLeft, Settings } from 'lucide-react';
+import { ArrowLeft, Edit, Share2, MoreVertical, Wallet, TrendingDown, ArrowDownLeft, Settings, TrendingUp } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getAuthenticatedUserWithFirm } from '@/lib/api/helpers';
 import AuthStatus from '@/components/AuthStatus';
 import MilestoneList from '@/components/projects/milestone-list';
+import { FinancialDashboardWrapper } from '@/components/projects/financial-dashboard-wrapper';
+import { ExpensesSection } from '@/components/projects/expenses-section';
 import type { Milestone } from '@/lib/types/database';
 
 interface PageProps {
@@ -71,24 +73,8 @@ export default async function ProjectDetailPage(props: PageProps) {
     }
 
     // Calculate financials
-    // In a real app we'd use the `project_summary` view again or aggregates, 
-    // but here we have the raw milestones so we can calc some of it.
-    // However, `project_summary` is better because it includes expenses.
-    // For now, let's just calculate from milestones for received amount
     const totalAmount = project.total_amount;
     const amountReceived = project.milestones?.reduce((sum: number, m: Milestone) => sum + (m.amount_paid || 0), 0) || 0;
-    // We don't have expenses loaded here. For accurate balance we should fetching project_summary row in parallel or separate.
-    // For Week 2 scope, showing rudimentary balance (Received - 0 expenses) is okay or fetch Summary.
-
-    // Let's fetch summary for accurate financial dashboard
-    const { data: summary } = await supabase
-        .from('project_summary')
-        .select('*')
-        .eq('id', params.projectId)
-        .single();
-
-    const balance = summary?.balance ?? (amountReceived);
-    const amountSpent = summary?.total_expenses ?? 0;
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
@@ -146,60 +132,33 @@ export default async function ProjectDetailPage(props: PageProps) {
                     </div>
                 </div>
 
-                {/* Financial Overview */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                        <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                                <Wallet className="w-5 h-5" />
+                {/* Financial Dashboard - Client component that updates when expenses change */}
+                <FinancialDashboardWrapper 
+                    projectId={project.id}
+                    totalAmount={totalAmount}
+                    amountReceived={amountReceived}
+                >
+                    {/* Milestones Section */}
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-xl font-bold text-gray-900">Payment Milestones</h2>
+                            <div className="text-sm text-gray-500">
+                                {project.milestones.filter((m: Milestone) => m.status === 'paid').length} of {project.milestones.length} Paid
                             </div>
-                            <span className="text-sm font-medium text-gray-500 uppercase">Total Budget</span>
                         </div>
-                        <div className="text-2xl font-bold text-gray-900">₹{totalAmount.toLocaleString()}</div>
+
+                        <MilestoneList 
+                            milestones={project.milestones} 
+                            totalAmount={totalAmount}
+                            projectName={project.project_name}
+                            clientName={project.client_name}
+                            projectId={project.id}
+                        />
                     </div>
 
-                    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                        <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2 bg-green-50 text-green-600 rounded-lg">
-                                <ArrowDownLeft className="w-5 h-5" />
-                            </div>
-                            <span className="text-sm font-medium text-gray-500 uppercase">Received</span>
-                        </div>
-                        <div className="text-2xl font-bold text-gray-900">₹{amountReceived.toLocaleString()}</div>
-                        <div className="text-xs text-gray-500 mt-1">From paid milestones</div>
-                    </div>
-
-                    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                        <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
-                                <TrendingDown className="w-5 h-5" />
-                            </div>
-                            <span className="text-sm font-medium text-gray-500 uppercase">Balance</span>
-                        </div>
-                        <div className={`text-2xl font-bold ${balance >= 0 ? 'text-gray-900' : 'text-red-600'}`}>
-                            ₹{balance.toLocaleString()}
-                        </div>
-                        {amountSpent > 0 && <div className="text-xs text-gray-500 mt-1">After ₹{amountSpent.toLocaleString()} expenses</div>}
-                    </div>
-                </div>
-
-                {/* Milestones Section */}
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                        <h2 className="text-xl font-bold text-gray-900">Payment Milestones</h2>
-                        <div className="text-sm text-gray-500">
-                            {project.milestones.filter((m: Milestone) => m.status === 'paid').length} of {project.milestones.length} Paid
-                        </div>
-                    </div>
-
-                    <MilestoneList 
-                        milestones={project.milestones} 
-                        totalAmount={totalAmount}
-                        projectName={project.project_name}
-                        clientName={project.client_name}
-                        projectId={project.id}
-                    />
-                </div>
+                    {/* Expenses Section */}
+                    <ExpensesSection projectId={project.id} />
+                </FinancialDashboardWrapper>
 
             </main>
         </div>
