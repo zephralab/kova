@@ -14,8 +14,21 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Kova - Supabase Authentication",
-  description: "Next.js application with Supabase authentication",
+  title: "Kova - Payment Management for Designers",
+  description: "Milestone-based payment collection for interior designers",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Kova",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+};
+
+export const viewport = {
+  themeColor: "#2563eb",
 };
 
 export default function RootLayout({
@@ -28,9 +41,22 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <PWAInitializer />
         {children}
         <ToastContainer />
       </body>
     </html>
   );
+}
+
+function PWAInitializer() {
+  if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker
+        .register("/sw.js")
+        .then((reg) => console.log("SW registered:", reg))
+        .catch((err) => console.log("SW registration failed:", err));
+    });
+  }
+  return null;
 }
