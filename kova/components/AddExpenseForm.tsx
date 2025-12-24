@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { toast } from '@/components/ui/toast';
+import { X, Plus, Receipt } from 'lucide-react';
 
 export function AddExpenseForm({
     projectId,
@@ -26,19 +27,10 @@ export function AddExpenseForm({
         setError(null);
 
         try {
-            // Validation
-            if (!description.trim()) {
-                throw new Error('Description is required');
-            }
-            if (!amount || parseFloat(amount) <= 0) {
-                throw new Error('Amount must be greater than 0');
-            }
-            if (!category) {
-                throw new Error('Category is required');
-            }
-            if (!expenseDate) {
-                throw new Error('Date is required');
-            }
+            if (!description.trim()) throw new Error('Description is required');
+            if (!amount || parseFloat(amount) <= 0) throw new Error('Amount must be greater than 0');
+            if (!category) throw new Error('Category is required');
+            if (!expenseDate) throw new Error('Date is required');
 
             const response = await fetch(
                 `/api/projects/${projectId}/expenses`,
@@ -60,10 +52,9 @@ export function AddExpenseForm({
                 throw new Error(data.error || 'Failed to add expense');
             }
 
-            toast.success('✓ Expense added');
+            toast.success('✓ Expense recorded');
             onExpenseAdded();
             setIsOpen(false);
-            // Reset form
             setDescription('');
             setAmount('');
             setCategory('materials');
@@ -82,35 +73,49 @@ export function AddExpenseForm({
         return (
             <button
                 onClick={() => setIsOpen(true)}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center gap-2 bg-[#1A1A1A] text-white px-6 py-3 rounded-xl text-sm font-bold tracking-widest hover:bg-[#D4AF37] transition-all duration-300 shadow-lg shadow-black/5"
             >
-                + Add Expense
+                <Plus className="w-4 h-4" />
+                RECORD EXPENSE
             </button>
         );
     }
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
-                <h2 className="text-xl font-bold mb-4">Add Expense</h2>
+        <div className="fixed inset-0 bg-[#1A1A1A]/60 backdrop-blur-sm flex items-center justify-center z-[100] p-6">
+            <div className="bg-white rounded-[32px] p-10 max-w-lg w-full shadow-2xl animate-in zoom-in-95 duration-300 border border-[#D4AF37]/10">
+                <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-[#FAF9F6] border border-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37]">
+                            <Receipt className="w-6 h-6" />
+                        </div>
+                        <h2 className="text-2xl font-serif font-bold text-[#1A1A1A]">Record Expense</h2>
+                    </div>
+                    <button
+                        onClick={() => setIsOpen(false)}
+                        className="text-zinc-400 hover:text-[#1A1A1A] transition-colors"
+                    >
+                        <X className="w-6 h-6" />
+                    </button>
+                </div>
 
-                <div className="space-y-4">
+                <div className="space-y-6">
                     <div>
-                        <label className="block text-sm font-medium mb-1">
-                            Description *
+                        <label className="block text-[10px] font-bold tracking-widest text-zinc-400 uppercase mb-2">
+                            Description / Item Name *
                         </label>
                         <input
                             type="text"
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
-                            placeholder="e.g., Tiles for living room"
-                            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="e.g., Italian Marble for Foyer"
+                            className="w-full px-4 py-3 bg-[#FAF9F6] border border-[#D4AF37]/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50 transition-all font-medium"
                         />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-6">
                         <div>
-                            <label className="block text-sm font-medium mb-1">
+                            <label className="block text-[10px] font-bold tracking-widest text-zinc-400 uppercase mb-2">
                                 Amount (₹) *
                             </label>
                             <input
@@ -118,81 +123,83 @@ export function AddExpenseForm({
                                 value={amount}
                                 onChange={(e) => setAmount(e.target.value)}
                                 placeholder="0"
-                                min="0"
-                                step="0.01"
-                                className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-4 py-3 bg-[#FAF9F6] border border-[#D4AF37]/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50 transition-all font-bold"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium mb-1">
-                                Category *
+                            <label className="block text-[10px] font-bold tracking-widest text-zinc-400 uppercase mb-2">
+                                Classification *
                             </label>
                             <select
                                 value={category}
                                 onChange={(e) => setCategory(e.target.value as typeof category)}
-                                className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-4 py-3 bg-[#FAF9F6] border border-[#D4AF37]/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50 transition-all font-bold appearance-none"
                             >
                                 <option value="materials">Materials</option>
                                 <option value="labor">Labor</option>
-                                <option value="transport">Transport</option>
+                                <option value="transport">Logistics</option>
                                 <option value="other">Other</option>
                             </select>
                         </div>
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium mb-1">
-                            Date *
-                        </label>
-                        <input
-                            type="date"
-                            value={expenseDate}
-                            onChange={(e) => setExpenseDate(e.target.value)}
-                            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                    </div>
+                    <div className="grid grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-[10px] font-bold tracking-widest text-zinc-400 uppercase mb-2">
+                                Value Date *
+                            </label>
+                            <input
+                                type="date"
+                                value={expenseDate}
+                                onChange={(e) => setExpenseDate(e.target.value)}
+                                className="w-full px-4 py-3 bg-[#FAF9F6] border border-[#D4AF37]/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50 transition-all font-medium"
+                            />
+                        </div>
 
-                    <div>
-                        <label className="block text-sm font-medium mb-1">
-                            Vendor Name (Optional)
-                        </label>
-                        <input
-                            type="text"
-                            value={vendorName}
-                            onChange={(e) => setVendorName(e.target.value)}
-                            placeholder="e.g., ABC Tiles Store"
-                            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
+                        <div>
+                            <label className="block text-[10px] font-bold tracking-widest text-zinc-400 uppercase mb-2">
+                                Vendor / Service Provider
+                            </label>
+                            <input
+                                type="text"
+                                value={vendorName}
+                                onChange={(e) => setVendorName(e.target.value)}
+                                placeholder="e.g., Marble World"
+                                className="w-full px-4 py-3 bg-[#FAF9F6] border border-[#D4AF37]/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50 transition-all font-medium"
+                            />
+                        </div>
                     </div>
 
                     {error && (
-                        <div className="p-3 bg-red-100 text-red-700 rounded text-sm">
+                        <div className="p-4 bg-red-50 text-red-700 rounded-xl text-xs font-bold border border-red-100 italic">
                             {error}
                         </div>
                     )}
                 </div>
 
-                <div className="flex gap-2 mt-6">
+                <div className="flex gap-4 mt-10">
                     <button
                         onClick={() => {
                             setIsOpen(false);
                             setError(null);
                         }}
-                        className="flex-1 px-4 py-2 border rounded hover:bg-gray-100 transition-colors"
+                        className="flex-1 px-4 py-4 border border-[#D4AF37]/20 rounded-xl text-zinc-400 font-bold tracking-widest hover:bg-[#FAF9F6] transition-all uppercase text-xs"
                         disabled={isLoading}
                     >
-                        Cancel
+                        Void
                     </button>
                     <button
                         onClick={handleSubmit}
                         disabled={isLoading}
-                        className="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="flex-2 px-8 py-4 bg-[#1A1A1A] text-white rounded-xl font-bold tracking-widest hover:bg-[#D4AF37] disabled:opacity-50 disabled:cursor-not-allowed transition-all uppercase text-xs shadow-lg shadow-black/5"
                     >
-                        {isLoading ? 'Saving...' : 'Save Expense'}
+                        {isLoading ? 'COMMITTING...' : 'REGISTER EXPENSE'}
                     </button>
                 </div>
             </div>
         </div>
     );
 }
+
+

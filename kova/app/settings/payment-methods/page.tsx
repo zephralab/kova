@@ -1,8 +1,5 @@
-import { Suspense } from 'react';
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import AuthStatus from '@/components/AuthStatus';
 import PaymentMethodsForm from '@/components/settings/payment-methods-form';
 
 export default async function PaymentMethodsPage() {
@@ -10,33 +7,24 @@ export default async function PaymentMethodsPage() {
     const { data: { session } } = await supabase.auth.getSession();
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-20">
-            {/* Header */}
-            <header className="bg-white border-b sticky top-0 z-10">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <Link href="/projects" className="text-gray-400 hover:text-gray-600 transition-colors">
-                            <ArrowLeft className="w-5 h-5" />
-                        </Link>
-                        <Link href="/projects" className="font-bold text-xl tracking-tight hover:text-gray-700">
-                            Kova
-                        </Link>
-                    </div>
-                    <Suspense fallback={<div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse" />}>
-                        <AuthStatus session={session} />
-                    </Suspense>
-                </div>
-            </header>
+        <div className="space-y-8">
+            <div className="mb-8">
+                <h1 className="text-2xl font-serif font-bold text-[#1A1A1A]">Bank Details</h1>
+                <p className="text-zinc-500 text-sm mt-1">Configure your settlement accounts to receive payments from clients via Razorpay.</p>
+            </div>
 
-            <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div className="mb-8">
-                    <h1 className="text-2xl font-bold text-gray-900">Payment Methods</h1>
-                    <p className="text-gray-500 mt-1">Add your bank account details to request payments from clients.</p>
-                </div>
-
+            <div className="bg-[#FAF9F6]/50 rounded-2xl border border-[#D4AF37]/5 p-2">
                 <PaymentMethodsForm />
-            </main>
+            </div>
+
+            <div className="pt-8 border-t border-[#D4AF37]/10">
+                <p className="text-[10px] text-zinc-400 font-medium">
+                    Settlements are processed according to our standard T+2 schedule. <br />
+                    Ensure all bank details are accurate to avoid payment delays.
+                </p>
+            </div>
         </div>
     );
 }
+
 

@@ -154,10 +154,13 @@ export async function GET() {
             return errorResponse(ErrorMessages.FORBIDDEN, 403);
         }
 
-        // Query project_summary view
+        // Query projects directly
         const { data: projects, error: queryError } = await supabase
-            .from('project_summary')
-            .select('*')
+            .from('projects')
+            .select(`
+                *,
+                milestones(amount, amount_paid, status)
+            `)
             .eq('firm_id', firmId)
             .order('created_at', { ascending: false });
 
@@ -167,19 +170,27 @@ export async function GET() {
         }
 
         // Format response
-        const response: ProjectListItem[] = (projects || []).map((p: ProjectSummary) => ({
-            id: p.id,
-            projectName: p.project_name,
-            clientName: p.client_name,
-            totalAmount: p.total_amount,
-            amountReceived: p.amount_received,
-            amountSpent: p.total_expenses,
-            balance: p.balance,
-            milestonePaid: p.milestones_paid,
-            milestonePending: p.milestones_pending,
-            shareUuid: p.share_uuid,
-            createdAt: p.created_at,
-        }));
+        const response: ProjectListItem[] = (projects || []).map((p: any) => {
+            const milestones = p.milestones || [];
+            const amountReceived = milestones.reduce((sum: number, m: any) => sum + (m.amount_paid || 0), 0);
+            const milestonePaid = milestones.filter((m: any) => m.status === 'paid').length;
+            const milestonePending = milestones.length - milestonePaid;
+
+            return {
+                id: p.id,
+                projectName: p.project_name,
+                clientName: p.client_name,
+                totalAmount: p.total_amount,
+                amountReceived: amountReceived,
+                amountSpent: 0,
+                balance: amountReceived,
+                milestonePaid: milestonePaid,
+                milestonePending: milestonePending,
+                shareUuid: p.share_uuid,
+                createdAt: p.created_at,
+            };
+        });
+
 
         return jsonResponse(response);
     } catch (error) {

@@ -1,5 +1,7 @@
 'use client';
 
+// Refreshing module factory to resolve Next.js HMR issues after layout restructure
+
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -46,7 +48,7 @@ export default function PaymentMethodsForm() {
             }
             const data = await response.json();
             setExistingData(data.paymentMethods);
-            
+
             // Pre-fill form if data exists
             if (data.paymentMethods.bankAccountHolderName) {
                 setBankAccountHolderName(data.paymentMethods.bankAccountHolderName);
@@ -246,9 +248,8 @@ export default function PaymentMethodsForm() {
                                     setAccountNumber(e.target.value);
                                     validateAccountNumber(e.target.value);
                                 }}
-                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                                    accountNumberError ? 'border-red-500' : 'border-gray-300'
-                                }`}
+                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${accountNumberError ? 'border-red-500' : 'border-gray-300'
+                                    }`}
                                 placeholder="9-18 digits"
                                 required
                             />
@@ -269,9 +270,8 @@ export default function PaymentMethodsForm() {
                                     setIfscCode(value);
                                     validateIFSC(value);
                                 }}
-                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                                    ifscError ? 'border-red-500' : 'border-gray-300'
-                                }`}
+                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${ifscError ? 'border-red-500' : 'border-gray-300'
+                                    }`}
                                 placeholder="HDFC0001234"
                                 maxLength={11}
                                 required
@@ -312,9 +312,8 @@ export default function PaymentMethodsForm() {
                                 setUpiId(e.target.value);
                                 validateUPI(e.target.value);
                             }}
-                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                                upiError ? 'border-red-500' : 'border-gray-300'
-                            }`}
+                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${upiError ? 'border-red-500' : 'border-gray-300'
+                                }`}
                             placeholder="designer@okhdfcbank"
                         />
                         {upiError && (
@@ -351,4 +350,5 @@ export default function PaymentMethodsForm() {
         </div>
     );
 }
+
 
