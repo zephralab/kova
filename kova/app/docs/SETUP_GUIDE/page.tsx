@@ -4,7 +4,7 @@ import { ArrowLeft, CheckCircle2 } from "lucide-react";
 export default function SetupGuidePage() {
     const steps = [
         { title: "Create Your Account", desc: "Sign up and set up your firm profile with your brand identity." },
-        { title: "Configure Bank Details", desc: "Go to settings and enter your settlement account for Razorpay transfers." },
+        { title: "Configure Bank Details", desc: "Go to settings and enter your settlement account details." },
         { title: "Start Your First Project", desc: "Define your milestones and share the first payment link with your client." }
     ];
 

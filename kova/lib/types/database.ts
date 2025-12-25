@@ -6,8 +6,6 @@ export interface Firm {
     subscription_status: 'trial' | 'active' | 'cancelled' | 'past_due';
     subscription_ends_at: string;
     plan_type: 'starter' | 'professional' | 'enterprise';
-    razorpay_key_id: string | null;
-    razorpay_key_secret: string | null;
     max_users: number;
     max_projects: number | null;
     created_at: string;
@@ -21,8 +19,6 @@ export interface User {
     full_name: string | null;
     phone: string | null;
     role: 'owner' | 'admin' | 'member' | 'viewer';
-    personal_razorpay_key_id: string | null;
-    personal_razorpay_key_secret: string | null;
     // Payment methods (Week 3)
     bank_account_holder_name: string | null;
     bank_name: string | null;
@@ -77,8 +73,6 @@ export interface MilestonePayment {
     milestone_id: string;
     amount: number;
     payment_link_url: string | null;
-    razorpay_payment_id: string | null;
-    razorpay_order_id: string | null;
     status: 'pending' | 'paid' | 'failed' | 'expired';
     created_by_user_id: string | null;
     reference: string | null; // Transaction ID, UTR, or confirmation number (Week 3)

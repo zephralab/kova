@@ -41,14 +41,6 @@ export default function TermsPage() {
                         </p>
                     </section>
 
-                    <section>
-                        <h2 className="text-xl font-bold text-[#1A1A1A] mb-4">3. Payment Processing</h2>
-                        <p>
-                            Payments are processed through our partner, Razorpay. Kova does not store your
-                            bank credentials directly but facilitates the creation of secure payment links.
-                        </p>
-                    </section>
-
                     <p className="pt-12 text-sm text-zinc-400">
                         For detailed inquiries, please contact legal@kovalabs.com
                     </p>

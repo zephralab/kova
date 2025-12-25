@@ -108,8 +108,6 @@ export type Database = {
           max_users: number | null
           name: string
           plan_type: string | null
-          razorpay_key_id: string | null
-          razorpay_key_secret: string | null
           subscription_ends_at: string | null
           subscription_status: string | null
           updated_at: string | null
@@ -121,8 +119,6 @@ export type Database = {
           max_users?: number | null
           name: string
           plan_type?: string | null
-          razorpay_key_id?: string | null
-          razorpay_key_secret?: string | null
           subscription_ends_at?: string | null
           subscription_status?: string | null
           updated_at?: string | null
@@ -134,8 +130,6 @@ export type Database = {
           max_users?: number | null
           name?: string
           plan_type?: string | null
-          razorpay_key_id?: string | null
-          razorpay_key_secret?: string | null
           subscription_ends_at?: string | null
           subscription_status?: string | null
           updated_at?: string | null
@@ -152,8 +146,6 @@ export type Database = {
           milestone_id: string
           paid_at: string | null
           payment_link_url: string | null
-          razorpay_order_id: string | null
-          razorpay_payment_id: string | null
           reference: string | null
           status: string
           updated_at: string | null
@@ -167,8 +159,6 @@ export type Database = {
           milestone_id: string
           paid_at?: string | null
           payment_link_url?: string | null
-          razorpay_order_id?: string | null
-          razorpay_payment_id?: string | null
           reference?: string | null
           status?: string
           updated_at?: string | null
@@ -182,8 +172,6 @@ export type Database = {
           milestone_id?: string
           paid_at?: string | null
           payment_link_url?: string | null
-          razorpay_order_id?: string | null
-          razorpay_payment_id?: string | null
           reference?: string | null
           status?: string
           updated_at?: string | null
@@ -459,8 +447,6 @@ export type Database = {
           is_active: boolean | null
           last_login_at: string | null
           payment_methods_updated_at: string | null
-          personal_razorpay_key_id: string | null
-          personal_razorpay_key_secret: string | null
           phone: string | null
           role: string | null
           updated_at: string | null
@@ -480,8 +466,6 @@ export type Database = {
           is_active?: boolean | null
           last_login_at?: string | null
           payment_methods_updated_at?: string | null
-          personal_razorpay_key_id?: string | null
-          personal_razorpay_key_secret?: string | null
           phone?: string | null
           role?: string | null
           updated_at?: string | null
@@ -501,8 +485,6 @@ export type Database = {
           is_active?: boolean | null
           last_login_at?: string | null
           payment_methods_updated_at?: string | null
-          personal_razorpay_key_id?: string | null
-          personal_razorpay_key_secret?: string | null
           phone?: string | null
           role?: string | null
           updated_at?: string | null
@@ -637,21 +619,6 @@ export type Database = {
         }[]
       }
       get_my_firm_id: { Args: never; Returns: string }
-      get_razorpay_credentials: {
-        Args: { user_uuid: string }
-        Returns: {
-          key_id: string
-          key_secret: string
-        }[]
-      }
-      record_milestone_payment: {
-        Args: {
-          payment_uuid: string
-          razorpay_ord_id: string
-          razorpay_pay_id: string
-        }
-        Returns: undefined
-      }
     }
     Enums: {
       [_ in never]: never

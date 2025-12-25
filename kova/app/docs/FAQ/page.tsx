@@ -9,7 +9,7 @@ export default function FAQPage() {
         },
         {
             q: "Is Kova secure for my clients?",
-            a: "Absolutely. We use industry-standard encryption and partner with Razorpay for all financial transactions, ensuring high security and trust."
+            a: "Absolutely. We use industry-standard encryption and secure payment processing to ensure high security and trust."
         },
         {
             q: "Can I track expenses in different categories?",

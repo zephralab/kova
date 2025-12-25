@@ -10,7 +10,7 @@ export default async function PaymentMethodsPage() {
         <div className="space-y-8">
             <div className="mb-8">
                 <h1 className="text-2xl font-serif font-bold text-[#1A1A1A]">Bank Details</h1>
-                <p className="text-zinc-500 text-sm mt-1">Configure your settlement accounts to receive payments from clients via Razorpay.</p>
+                <p className="text-zinc-500 text-sm mt-1">Configure your settlement accounts to receive payments from clients.</p>
             </div>
 
             <div className="bg-[#FAF9F6]/50 rounded-2xl border border-[#D4AF37]/5 p-2">
