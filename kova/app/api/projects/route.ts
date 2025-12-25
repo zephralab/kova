@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
 
         if (projectError || !project) {
             console.error('Project creation error:', projectError);
-            return errorResponse(ErrorMessages.DATABASE_ERROR, 500, projectError.message);
+            return errorResponse(ErrorMessages.DATABASE_ERROR, 500, projectError?.message);
         }
 
         // Create milestones

@@ -23,7 +23,7 @@ const createProjectSchema = z.object({
     totalAmount: z.number().min(1, 'Total amount must be greater than 0'),
     templateId: z.string().optional(),
     milestones: z.array(customMilestoneSchema).optional(),
-    milestoneMode: z.enum(['template', 'custom']).default('template'),
+    milestoneMode: z.enum(['template', 'custom']),
     // We add a refine at the component level or just manual check before submit for the XOR logic
 });
 

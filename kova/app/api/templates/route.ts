@@ -59,7 +59,7 @@ export async function GET() {
             name: t.name,
             description: t.description || '',
             isDefault: t.is_default,
-            items: (itemsByTemplate[t.id] || []).map((i) => ({
+            items: (itemsByTemplate[t.id] || []).map((i: MilestoneTemplateItem) => ({
                 id: i.id,
                 title: i.title,
                 percentage: i.percentage,

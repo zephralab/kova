@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-export default function SignInForm() {
+function SignInFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
@@ -88,5 +88,13 @@ export default function SignInForm() {
         Authentication uses Supabase email/password. Ensure you enabled the Email provider in Supabase → Authentication.
       </p>
     </form>
+  );
+}
+
+export default function SignInForm() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SignInFormContent />
+    </Suspense>
   );
 }

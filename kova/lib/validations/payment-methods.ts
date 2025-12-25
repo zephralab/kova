@@ -8,9 +8,7 @@ export const paymentMethodsSchema = z.object({
         .regex(/^\d{9,18}$/, 'Account number must be 9-18 digits'),
     ifscCode: z.string()
         .regex(/^[A-Z]{4}0[A-Z0-9]{6}$/, 'IFSC code must be 11 alphanumeric characters (e.g., HDFC0001234)'),
-    accountType: z.enum(['savings', 'current'], {
-        errorMap: () => ({ message: 'Account type must be savings or current' })
-    }),
+    accountType: z.enum(['savings', 'current']).default('savings'),
     upiId: z.string()
         .regex(/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+$/, 'UPI ID must be in format username@bankname')
         .optional()

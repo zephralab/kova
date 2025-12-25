@@ -44,7 +44,8 @@ export async function POST(request: NextRequest, props: Params) {
         }
 
         // Verify ownership (project belongs to user's firm)
-        if (milestone.projects.firm_id !== firmId) {
+        const project = Array.isArray(milestone.projects) ? milestone.projects[0] : milestone.projects;
+        if (project.firm_id !== firmId) {
             return errorResponse(ErrorMessages.FORBIDDEN, 403);
         }
 
@@ -52,7 +53,7 @@ export async function POST(request: NextRequest, props: Params) {
         const { data: designer, error: designerError } = await supabase
             .from('users')
             .select('id, full_name, bank_account_holder_name, bank_name, account_number, ifsc_code, account_type, upi_id')
-            .eq('id', milestone.projects.created_by_user_id)
+            .eq('id', project.created_by_user_id)
             .single();
 
         if (designerError || !designer) {
@@ -96,12 +97,12 @@ export async function POST(request: NextRequest, props: Params) {
         const invoiceText = `PAYMENT REQUEST
 ═════════════════════════════════════════════
 
-Project: ${milestone.projects.project_name}
+Project: ${project.project_name}
 Milestone: ${milestone.title}
 Amount Due: ${amountFormatted}${paymentStatusNote}
 
 PROJECT DETAILS:
-Client: ${milestone.projects.client_name}
+Client: ${project.client_name}
 Designer: ${designer.full_name || 'Designer'}
 Due Date: ${dueDateFormatted}
 
@@ -124,7 +125,7 @@ Reference: ${reference}`;
 
         return jsonResponse({
             invoiceId: `INV-${Date.now()}`,
-            projectName: milestone.projects.project_name,
+            projectName: project.project_name,
             milestoneName: milestone.title,
             amount: amountRemaining,
             amountPaid: amountPaid,
@@ -132,7 +133,7 @@ Reference: ${reference}`;
             currency: 'INR',
             amountFormatted,
             dueDate: milestone.due_date,
-            clientName: milestone.projects.client_name,
+            clientName: project.client_name,
             designerName: designer.full_name || 'Designer',
             bankDetails: {
                 accountHolderName: designer.bank_account_holder_name,

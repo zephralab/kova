@@ -23,7 +23,7 @@ export async function POST(request: NextRequest, props: Params) {
         const validation = markPaymentSchema.safeParse(body);
 
         if (!validation.success) {
-            const errorDetails = validation.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
+            const errorDetails = validation.error.issues.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
             console.error('Validation error:', errorDetails);
             return errorResponse(`Validation failed: ${errorDetails}`, 400);
         }
@@ -55,7 +55,8 @@ export async function POST(request: NextRequest, props: Params) {
         }
 
         // Verify ownership
-        if (milestone.projects.firm_id !== firmId) {
+        const project = Array.isArray(milestone.projects) ? milestone.projects[0] : milestone.projects;
+        if (project.firm_id !== firmId) {
             return errorResponse(ErrorMessages.FORBIDDEN, 403);
         }
 
