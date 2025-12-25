@@ -1,6 +1,0 @@
-{
-  "buildCommand": "cd kova && npm run build",
-  "devCommand": "cd kova && npm run dev",
-  "installCommand": "cd kova && npm install",
-  "outputDirectory": "kova/.next"
-}
