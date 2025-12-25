@@ -187,7 +187,7 @@ export function AddExpenseForm({
                         className="flex-1 px-4 py-4 border border-[#D4AF37]/20 rounded-xl text-zinc-400 font-bold tracking-widest hover:bg-[#FAF9F6] transition-all uppercase text-xs"
                         disabled={isLoading}
                     >
-                        Void
+                        Cancel
                     </button>
                     <button
                         onClick={handleSubmit}
